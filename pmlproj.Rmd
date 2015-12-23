@@ -16,23 +16,33 @@ set.seed(6540)
 Load training and testing data sets
 
 ```{r}
-train < - read.csv("pml-training.csv", stringsAsFactors = FALSE, na.strings = c("NA", "#DIV/0!", ""))
-test <- read.csv("pml-testing.csv", stringsAsFactors = FALSE, na.strings = c("NA", "#DIV/0!", ""))
+training <- read.csv("pml-training.csv", stringsAsFactors=FALSE, na.strings = c("NA", "#DIV/0!", ""))
+testing_final <- read.csv("pml-testing.csv", stringsAsFactors=FALSE, na.strings = c("NA", "#DIV/0!", ""))
 ```
 
 Need to clean up column. There are a number of columns that have sparse data. 
 
 ```{r}
 count.na <- function(x) {sum(is.na(x))}
-temp <- train %>% summarize_each(funs(count.na))
+temp <- training %>% summarize_each(funs(count.na))
 temp <- temp[,temp[1,]<=1000]
 colkeep<-names(temp)
-train <- train %>% select(one_of(colkeep))
-test <- test %>% select(one_of(colkeep))
-train$classe <- factor(train$classe)
-test$classe <- factor(test$classe)
+training <- training %>% select(one_of(colkeep))
+testing_final <- testing_final %>% select(one_of(colkeep))
+testing_final <- testing_final %>% select(-one_of(c("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window")))
+training <- training %>% select(-one_of(c("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window")))
+training$classe <- factor(training$classe)
+```
+
+
+```{r}
+inTrain <- createDataPartition(training, p=0.75, list=FALSE)
+train <- training[inTrain]
+test <- training[-inTrain]
+
 ```
 
 ```{r}
-proj_model <- train(classe~., data=train, method="glm")
+
+proj_model <- train(classe~., data=training, method="rf", tuneGrid=data.frame(mtry=3))
 ```
