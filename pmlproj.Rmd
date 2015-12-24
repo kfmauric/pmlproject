@@ -6,21 +6,27 @@ output: html_document
 ---
 
 Setup the libraries that will be used
-
 ```{r}
 library(caret)
 library(dplyr)
-set.seed(6540)
+library(parallel)
 ```
 
-Load training and testing data sets
+Set the seed for the program and set up parallel processing
+```{r}
+set.seed(6540)
+c1 <- makeCluster(3)
+registerDoParallel(c1)
+```
+
+Load training and testing data sets making sure to handle missing data
 
 ```{r}
 training <- read.csv("pml-training.csv", stringsAsFactors=FALSE, na.strings = c("NA", "#DIV/0!", ""))
 testing_final <- read.csv("pml-testing.csv", stringsAsFactors=FALSE, na.strings = c("NA", "#DIV/0!", ""))
 ```
 
-Need to clean up column. There are a number of columns that have sparse data. 
+Remove columns that have sparse data or data that will not be useful in a model.  
 
 ```{r}
 count.na <- function(x) {sum(is.na(x))}
@@ -35,6 +41,7 @@ training <- training %>% select(-one_of(c("X", "user_name", "raw_timestamp_part_
 training$classe <- factor(training$classe)
 ```
 
+Split training data into test and training sets, since there are no classifications for the data set labeled test.
 
 ```{r}
 inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)
@@ -43,6 +50,24 @@ testing <- training[-inTrain,]
 
 ```
 
-```{r}
+Set model parameters and train the random forest model. The mtry variable was set to 3 in order to speed up training.
+
+```{r, cache=TRUE}
 proj_model <- train(classe~., data = training, method="rf", tuneGrid=data.frame(mtry=3))
+```
+
+Summarise Model
+```{r}
+proj_model
+```
+
+Evaluate prediction on the reserved testing set. 
+```{r}
+testPredict <- predict(proj_model$finalModel, newdata=testing)
+confusionMatrix(testPredict, testing$classe)
+```
+
+Cleanup
+```{r}
+stopCluster(c1)
 ```
