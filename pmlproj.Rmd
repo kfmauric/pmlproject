@@ -28,6 +28,7 @@ temp <- training %>% summarize_each(funs(count.na))
 temp <- temp[,temp[1,]<=1000]
 colkeep<-names(temp)
 training <- training %>% select(one_of(colkeep))
+testing_final$classe <- "X"
 testing_final <- testing_final %>% select(one_of(colkeep))
 testing_final <- testing_final %>% select(-one_of(c("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window")))
 training <- training %>% select(-one_of(c("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window")))
@@ -36,13 +37,12 @@ training$classe <- factor(training$classe)
 
 
 ```{r}
-inTrain <- createDataPartition(training, p=0.75, list=FALSE)
-train <- training[inTrain]
-test <- training[-inTrain]
+inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)
+training <- training[inTrain,]
+testing <- training[-inTrain,]
 
 ```
 
 ```{r}
-
-proj_model <- train(classe~., data=training, method="rf", tuneGrid=data.frame(mtry=3))
+proj_model <- train(classe~., data = training, method="rf", tuneGrid=data.frame(mtry=3))
 ```
