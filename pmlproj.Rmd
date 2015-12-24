@@ -52,7 +52,7 @@ testing <- training[-inTrain,]
 
 Set model parameters and train the random forest model. The mtry variable was set to 3 in order to speed up training.
 
-```{r, cache=TRUE}
+```{r}
 proj_model <- train(classe~., data = training, method="rf", tuneGrid=data.frame(mtry=3))
 ```
 
