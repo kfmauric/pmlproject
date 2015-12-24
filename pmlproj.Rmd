@@ -9,13 +9,13 @@ Setup the libraries that will be used
 ```{r}
 library(caret)
 library(dplyr)
-library(parallel)
+library(doParallel)
 ```
 
 Set the seed for the program and set up parallel processing
 ```{r}
 set.seed(6540)
-c1 <- makeCluster(3)
+c1 <- makeCluster(2)
 registerDoParallel(c1)
 ```
 
