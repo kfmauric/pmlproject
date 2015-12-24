@@ -1,5 +1,5 @@
 ---
-title: "Pratical Machine Learning Project"
+title: "Practical Machine Learning Project"
 author: "Kyle Maurice"
 date: "December 23, 2015"
 output: html_document
@@ -9,13 +9,13 @@ Setup the libraries that will be used
 ```{r}
 library(caret)
 library(dplyr)
-library(parallel)
+library(doParallel)
 ```
 
 Set the seed for the program and set up parallel processing
 ```{r}
 set.seed(6540)
-c1 <- makeCluster(3)
+c1 <- makeCluster(2)
 registerDoParallel(c1)
 ```
 
@@ -56,7 +56,7 @@ Set model parameters and train the random forest model. The mtry variable was se
 proj_model <- train(classe~., data = training, method="rf", tuneGrid=data.frame(mtry=3))
 ```
 
-Summarise Model
+Summarize Model
 ```{r}
 proj_model
 ```
