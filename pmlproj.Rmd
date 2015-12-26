@@ -5,8 +5,12 @@ date: "December 23, 2015"
 output: html_document
 ---
 
+###Summary  
+The purpose of the assignment was to create a machine learning model using data from a series of accelorometers to predict the type of movement being performed by the subject. The data was provided by the  
+human activity recognition project,  http://groupware.les.inf.puc-rio.br/har. It was found that a prediction model giving 99% accuracy in cross-validation (boosting with random forest) could be generated. 
+
 Setup the libraries that will be used
-```{r}
+```{r,message=FALSE, error=FALSE}
 library(caret)
 library(dplyr)
 library(doParallel)
@@ -20,14 +24,12 @@ registerDoParallel(c1)
 ```
 
 Load training and testing data sets making sure to handle missing data
-
 ```{r}
 training <- read.csv("pml-training.csv", stringsAsFactors=FALSE, na.strings = c("NA", "#DIV/0!", ""))
 testing_final <- read.csv("pml-testing.csv", stringsAsFactors=FALSE, na.strings = c("NA", "#DIV/0!", ""))
 ```
 
 Remove columns that have sparse data or data that will not be useful in a model.  
-
 ```{r}
 count.na <- function(x) {sum(is.na(x))}
 temp <- training %>% summarize_each(funs(count.na))
@@ -41,8 +43,7 @@ training <- training %>% select(-one_of(c("X", "user_name", "raw_timestamp_part_
 training$classe <- factor(training$classe)
 ```
 
-Split training data into test and training sets, since there are no classifications for the data set labeled test.
-
+Split training data into test and training sets, since there are no classifications for the data set labeled test in the downloaded data set, other means of validation will be necessary.
 ```{r}
 inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)
 training <- training[inTrain,]
@@ -50,8 +51,7 @@ testing <- training[-inTrain,]
 
 ```
 
-Set model parameters and train the random forest model. The mtry variable was set to 3 in order to speed up training.
-
+Set model parameters and train the random forest model. The mtry variable was set to 3 in order to speed up training. Initial training runs took hours, the model can now be trained in less than 30 minutes.
 ```{r}
 proj_model <- train(classe~., data = training, method="rf", tuneGrid=data.frame(mtry=3))
 ```
